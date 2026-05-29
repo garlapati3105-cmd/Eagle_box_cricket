@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const chatRoutes = require('./routes/chat');
 const slotsRoutes = require('./routes/slots');
@@ -16,6 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
+app.use(helmet());
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -41,6 +43,12 @@ const generalLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
 });
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per windowMs
+  message: { error: 'Too many authentication attempts. Please try again later.' },
+});
+
 app.use(generalLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
@@ -49,7 +57,7 @@ app.use('/api/slots', slotsRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 
 // ─── Health Check ────────────────────────────────────────────────────────────

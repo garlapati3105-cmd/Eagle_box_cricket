@@ -1,48 +1,8 @@
+const bcrypt = require('bcryptjs'); // FIXED: was missing, caused provisionAdmin() crash
 const supabase = require('../database/supabase');
-const { generateToken } = require('../middleware/auth');
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
-/**
- * POST /api/admin/login
- */
-async function adminLogin(req, res) {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
-    }
-
-    if (!ADMIN_PASSWORD) {
-      return res.status(503).json({ error: 'Admin password is not configured' });
-    }
-
-    // Simple credential check (can be extended to DB-backed auth)
-    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const user = {
-      id: 'admin-env-id',
-      name: 'Eagle Admin',
-      email: 'admin@eagleboxcricket.com',
-      role: 'admin'
-    };
-    const token = generateToken(user);
-
-    return res.json({
-      success: true,
-      token,
-      expiresIn: '24h',
-      user,
-    });
-  } catch (error) {
-    console.error('Admin login error:', error.message);
-    return res.status(500).json({ error: 'Login failed' });
-  }
-}
 
 /**
  * GET /api/admin/stats
@@ -116,44 +76,63 @@ async function getStats(req, res) {
 }
 
 /**
- * GET /api/admin/recent-chats
+ * GET /api/admin/chats
+ * FIXED: Eliminated N+1 query by fetching all messages in one query,
+ * then grouping in memory. Added pagination.
  */
 async function getRecentChats(req, res) {
   try {
-    const { limit = 20 } = req.query;
-    
-    const { data: sessions } = await supabase
+    const { limit = 20, page = 1 } = req.query;
+    const parsedLimit = Math.min(parseInt(limit) || 20, 50); // cap at 50
+    const parsedPage = Math.max(parseInt(page) || 1, 1);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    // Step 1: Fetch paginated sessions
+    const { data: sessions, count: totalSessions } = await supabase
       .from('sessions')
-      .select('id, created_at, last_active')
+      .select('id, created_at, last_active', { count: 'exact' })
       .order('last_active', { ascending: false })
-      .limit(parseInt(limit));
+      .range(offset, offset + parsedLimit - 1);
 
-    if (!sessions || sessions.length === 0) return res.json({ chats: [] });
+    if (!sessions || sessions.length === 0) {
+      return res.json({ chats: [], total: 0, page: parsedPage });
+    }
 
-    // Get first and last message of each session
-    const chats = await Promise.all(sessions.map(async (session) => {
-      const { data: msgs } = await supabase
-        .from('messages')
-        .select('role, content, intent, created_at')
-        .eq('session_id', session.id)
-        .order('created_at', { ascending: true })
-        .limit(20);
+    const sessionIds = sessions.map(s => s.id);
 
+    // Step 2: Fetch ALL messages for these sessions in ONE query (no N+1)
+    const { data: allMessages } = await supabase
+      .from('messages')
+      .select('session_id, role, content, intent, created_at')
+      .in('session_id', sessionIds)
+      .order('created_at', { ascending: true });
+
+    // Step 3: Group messages by session_id in memory
+    const messagesBySession = {};
+    (allMessages || []).forEach(m => {
+      if (!messagesBySession[m.session_id]) {
+        messagesBySession[m.session_id] = [];
+      }
+      messagesBySession[m.session_id].push(m);
+    });
+
+    const chats = sessions.map(session => {
+      const msgs = (messagesBySession[session.id] || []).slice(-20); // last 20 messages
       return {
         sessionId: session.id,
         startedAt: session.created_at,
         lastActive: session.last_active,
-        messageCount: msgs?.length || 0,
-        messages: msgs || [],
-        firstMessage: msgs?.[0]?.content || '',
-        dominantIntent: getDominantIntent(msgs || []),
+        messageCount: msgs.length,
+        messages: msgs,
+        firstMessage: msgs[0]?.content || '',
+        dominantIntent: getDominantIntent(msgs),
       };
-    }));
+    });
 
-    return res.json({ chats });
+    return res.json({ chats, total: totalSessions || 0, page: parsedPage });
   } catch (error) {
     console.error('Recent chats error:', error.message);
-    return res.json({ chats: [] });
+    return res.json({ chats: [], total: 0, page: 1 });
   }
 }
 
@@ -165,10 +144,17 @@ function getDominantIntent(messages) {
 }
 
 /**
- * Provision default admin user on startup
+ * Provision default admin user on startup.
+ * Only runs if no admin exists in the DB.
+ * Requires ADMIN_PASSWORD env var to be set.
  */
 async function provisionAdmin() {
   try {
+    if (!ADMIN_PASSWORD) {
+      console.warn('⚠️  ADMIN_PASSWORD not set — skipping admin provisioning.');
+      return;
+    }
+
     const { data: adminExists } = await supabase
       .from('users')
       .select('id')
@@ -181,8 +167,9 @@ async function provisionAdmin() {
     }
 
     console.log('👑 Provisioning default admin user in database...');
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(ADMIN_PASSWORD, salt);
+
+    // FIXED: bcrypt is now imported correctly; using async hash with rounds=12
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
 
     const { error } = await supabase
       .from('users')
@@ -204,4 +191,4 @@ async function provisionAdmin() {
   }
 }
 
-module.exports = { adminLogin, getStats, getRecentChats, provisionAdmin };
+module.exports = { getStats, getRecentChats, provisionAdmin };

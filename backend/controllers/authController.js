@@ -2,9 +2,6 @@ const bcrypt = require('bcryptjs');
 const supabase = require('../database/supabase');
 const { generateToken } = require('../middleware/auth');
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 /**
  * POST /api/auth/register
  * Player registration only
@@ -26,8 +23,12 @@ async function registerPlayer(req, res) {
       return res.status(400).json({ error: 'Invalid email address' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    // Strict Password Policy
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' });
     }
 
     // Check if user already exists
@@ -41,9 +42,8 @@ async function registerPlayer(req, res) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Hash password
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
+    // Hash password with high work factor (rounds=12)
+    const passwordHash = await bcrypt.hash(password, 12);
 
     // Save to Supabase
     const { data: newUser, error } = await supabase
@@ -99,25 +99,7 @@ async function loginUser(req, res) {
 
     // ─── ADMIN LOGIN FLOW ───
     if (role === 'admin') {
-      // 1. Check fallback credentials from environment variables first
-      const envUsernameMatch = formattedInput === ADMIN_USERNAME.toLowerCase();
-      const envEmailMatch = formattedInput === 'admin@eagleboxcricket.com'; // custom fallback
-
-      if ((envUsernameMatch || envEmailMatch) && ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
-        const token = generateToken({
-          id: 'admin-env-id',
-          name: 'Eagle Admin',
-          email: 'admin@eagleboxcricket.com',
-          role: 'admin'
-        });
-        return res.json({
-          success: true,
-          token,
-          user: { id: 'admin-env-id', name: 'Eagle Admin', email: 'admin@eagleboxcricket.com', role: 'admin' }
-        });
-      }
-
-      // 2. Otherwise check database for admin user
+      // Look up admin exclusively in the database (removed plaintext env-bypass)
       const { data: dbAdmin } = await supabase
         .from('users')
         .select('*')
@@ -131,7 +113,7 @@ async function loginUser(req, res) {
         return res.status(401).json({ error: 'Invalid admin credentials' });
       }
 
-      const isPasswordValid = bcrypt.compareSync(password, adminUser.password_hash);
+      const isPasswordValid = await bcrypt.compare(password, adminUser.password_hash);
       if (!isPasswordValid) {
         return res.status(401).json({ error: 'Invalid admin credentials' });
       }
@@ -168,7 +150,7 @@ async function loginUser(req, res) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      const isPasswordValid = bcrypt.compareSync(password, playerUser.password_hash);
+      const isPasswordValid = await bcrypt.compare(password, playerUser.password_hash);
       if (!isPasswordValid) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
@@ -208,15 +190,6 @@ async function getProfile(req, res) {
   try {
     const { id, role } = req.user;
 
-    if (id === 'admin-env-id') {
-      return res.json({
-        id: 'admin-env-id',
-        name: 'Eagle Admin',
-        email: 'admin@eagleboxcricket.com',
-        role: 'admin'
-      });
-    }
-
     const { data: user, error } = await supabase
       .from('users')
       .select('id, name, email, phone, role, created_at')
@@ -240,13 +213,14 @@ async function getProfile(req, res) {
  */
 async function getPlayerBookings(req, res) {
   try {
-    const { id, email } = req.user;
+    const { id } = req.user;
 
-    // Fetch leads where user_id = id OR email = email
+    // Fetch leads exclusively matching the validated JWT user_id 
+    // Removed the "or email" condition to prevent email enumeration attacks
     const { data: bookings, error } = await supabase
       .from('leads')
       .select('*')
-      .or(`user_id.eq.${id},email.eq.${email}`)
+      .eq('user_id', id)
       .order('created_at', { ascending: false });
 
     if (error) {

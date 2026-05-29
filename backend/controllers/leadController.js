@@ -18,6 +18,25 @@ async function createLead(req, res) {
       return res.status(400).json({ error: 'Invalid Indian phone number (must be 10 digits starting with 6-9)' });
     }
 
+    const formattedDate = preferredDate ? new Date(preferredDate).toISOString().split('T')[0] : null;
+    const cleanSlot = preferredSlot ? preferredSlot.trim() : null;
+
+    // ─── Duplicate Lead Prevention ───
+    if (formattedDate && cleanSlot) {
+      const { data: duplicateLead } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('phone', phone.replace(/\s+/g, ''))
+        .eq('preferred_date', formattedDate)
+        .eq('preferred_slot', cleanSlot)
+        .in('status', ['new', 'contacted', 'confirmed'])
+        .maybeSingle();
+
+      if (duplicateLead) {
+        return res.status(409).json({ error: 'Conflict', message: 'You already have an active booking request for this slot.' });
+      }
+    }
+
     // ─── Auto-Link to Registered Player Account ───
     let userId = null;
     const authHeader = req.headers.authorization;
@@ -54,8 +73,8 @@ async function createLead(req, res) {
       phone: phone.replace(/\s+/g, ''),
       email: email?.trim() || null,
       sport_type: sportType || 'Cricket',
-      preferred_slot: preferredSlot || null,
-      preferred_date: preferredDate || null,
+      preferred_slot: cleanSlot || null,
+      preferred_date: formattedDate || null,
       team_size: teamSize ? parseInt(teamSize) : null,
       message: message?.trim() || null,
       session_id: sessionId || null,
@@ -83,8 +102,7 @@ async function createLead(req, res) {
     // ─── AUTOMATICALLY BOOK/BLOCK SLOT(S) IN DATABASE ───
     if (lead.preferred_date && lead.preferred_slot) {
       try {
-        const formattedDate = new Date(lead.preferred_date).toISOString().split('T')[0];
-        const requestedSlots = parseSlotRange(lead.preferred_slot.trim());
+        const requestedSlots = parseSlotRange(cleanSlot);
 
         // Check if all requested slots are available
         const { data: existingSlots } = await supabase
@@ -288,9 +306,17 @@ async function getPublicLeadStatus(req, res) {
       return res.status(500).json({ error: 'Failed to fetch booking details' });
     }
 
+    // Mask the name for privacy when querying by phone
+    const maskedBookings = (bookings || []).map(b => {
+      if (!isUUID && b.name) {
+        return { ...b, name: b.name.charAt(0) + '*'.repeat(Math.max(1, b.name.length - 1)) };
+      }
+      return b;
+    });
+
     return res.json({
       success: true,
-      bookings: bookings || []
+      bookings: maskedBookings
     });
 
   } catch (error) {

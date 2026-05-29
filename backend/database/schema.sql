@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   last_active TIMESTAMPTZ DEFAULT NOW(),
   user_agent TEXT,
-  ip_address TEXT
+  ip_address TEXT,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Messages table (full chat history)
@@ -75,13 +76,7 @@ CREATE TABLE IF NOT EXISTS feedback (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Admin users table
-CREATE TABLE IF NOT EXISTS admin_users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+
 
 -- ================================================================
 -- Indexes for performance
@@ -92,6 +87,8 @@ CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 CREATE INDEX IF NOT EXISTS idx_slots_date ON slots(slot_date);
 CREATE INDEX IF NOT EXISTS idx_feedback_session ON feedback(session_id);
 CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
 -- ================================================================
 -- Row Level Security (RLS) - Disable for simplicity, backend handles auth
@@ -101,7 +98,6 @@ ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 -- Allow all operations from service_role (backend uses service_role key)
@@ -110,7 +106,6 @@ CREATE POLICY "Allow all for service role" ON messages FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON leads FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON slots FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON feedback FOR ALL USING (true);
-CREATE POLICY "Allow all for service role" ON admin_users FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON users FOR ALL USING (true);
 
 -- ================================================================
