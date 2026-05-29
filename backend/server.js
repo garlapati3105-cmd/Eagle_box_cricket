@@ -96,7 +96,7 @@ const { provisionAdmin } = require('./controllers/adminController');
 
 // Vercel serverless functions shouldn't call app.listen(), Vercel handles the HTTP server.
 // We only call app.listen() if we're running locally (not on Vercel).
-if (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true') {
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`\n🦅 Eagle Box Cricket AI Backend`);
     console.log(`✅ Server running on http://localhost:${PORT}`);
