@@ -91,22 +91,25 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
+// ─── Start Server (Vercel Compatibility) ────────────────────────────────────
 const { provisionAdmin } = require('./controllers/adminController');
 
-app.listen(PORT, () => {
-  console.log(`\n🦅 Eagle Box Cricket AI Backend`);
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🤖 Grok API: ${process.env.GROK_API_KEY && process.env.GROK_API_KEY !== 'xai-your-grok-api-key-here' ? '✅ Configured' : '⚠️  Demo Mode (add GROK_API_KEY to .env)'}`);
-  console.log(`🗄️  Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '⚠️  Not configured'}`);
-  console.log(`📧 Email: ${process.env.EMAIL_USER ? '✅ Configured' : '⚠️  Not configured'}\n`);
-  
-  // Auto-provision admin user in database
-  if (process.env.SUPABASE_URL) {
-    provisionAdmin();
-  }
-});
-
+// Vercel serverless functions shouldn't call app.listen(), Vercel handles the HTTP server.
+// We only call app.listen() if we're running locally (not on Vercel).
+if (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true') {
+  app.listen(PORT, () => {
+    console.log(`\n🦅 Eagle Box Cricket AI Backend`);
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🤖 Grok API: ${process.env.GROK_API_KEY && process.env.GROK_API_KEY !== 'xai-your-grok-api-key-here' ? '✅ Configured' : '⚠️  Demo Mode (add GROK_API_KEY to .env)'}`);
+    console.log(`🗄️  Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '⚠️  Not configured'}`);
+    console.log(`📧 Email: ${process.env.EMAIL_USER ? '✅ Configured' : '⚠️  Not configured'}\n`);
+    
+    // Auto-provision admin user in database locally
+    if (process.env.SUPABASE_URL) {
+      provisionAdmin();
+    }
+  });
+}
 
 module.exports = app;
