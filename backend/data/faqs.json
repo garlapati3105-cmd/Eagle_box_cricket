@@ -1,0 +1,64 @@
+{
+  "faqs": [
+    {
+      "question": "Is parking available at the venue?",
+      "answer": "Yes, free parking is available for 20+ vehicles at the venue."
+    },
+    {
+      "question": "Do I need to wear sports shoes?",
+      "answer": "Yes, sports shoes are mandatory for safety. Footwear with spikes or heels is not allowed on the turf."
+    },
+    {
+      "question": "Is outside food allowed?",
+      "answer": "Outside food is not allowed inside the playing area. We have a food stall with snacks and beverages available."
+    },
+    {
+      "question": "What is the cancellation policy?",
+      "answer": "Cancellations made 24 hours before the slot get a full refund. Cancellations within 24 hours get 50% refund. No refund for no-shows."
+    },
+    {
+      "question": "Is advance booking required?",
+      "answer": "Yes, advance booking is required. Walk-in availability depends on current slot status. We recommend booking at least 1 day in advance."
+    },
+    {
+      "question": "Can I rent equipment?",
+      "answer": "Yes! We provide cricket bats, balls, stumps, pads, gloves, football, and badminton rackets on rent. Ask our staff for details."
+    },
+    {
+      "question": "Is the venue open on holidays?",
+      "answer": "Yes, Eagle Box Cricket is open all 7 days including public holidays, from 6 AM to 11 PM."
+    },
+    {
+      "question": "Do you have floodlights for night games?",
+      "answer": "Yes, we have full floodlight facilities so you can play comfortably even after sunset."
+    },
+    {
+      "question": "How many players can play at once?",
+      "answer": "Each session supports up to 12 players. For larger groups or tournaments, please contact us directly."
+    },
+    {
+      "question": "Is smoking allowed at the venue?",
+      "answer": "No. Smoking and alcohol are strictly prohibited inside the venue premises."
+    },
+    {
+      "question": "What payment methods are accepted?",
+      "answer": "We accept cash, UPI (Google Pay, PhonePe, Paytm), and bank transfers. Online payment links can be shared on request."
+    },
+    {
+      "question": "How do I confirm my booking?",
+      "answer": "Once you share your details, our team will contact you within 30 minutes to confirm the slot and share the payment link."
+    },
+    {
+      "question": "Are there changing rooms available?",
+      "answer": "Yes, clean changing rooms and washrooms are available for players."
+    },
+    {
+      "question": "Do you support birthday parties or corporate events?",
+      "answer": "Absolutely! We offer special packages for birthday parties, corporate team outings, and group events. Contact us for custom quotes."
+    },
+    {
+      "question": "What is the turf size?",
+      "answer": "Our box cricket turf is 30ft x 60ft. Football turf is full size. All turfs are made with high-quality artificial grass."
+    }
+  ]
+}

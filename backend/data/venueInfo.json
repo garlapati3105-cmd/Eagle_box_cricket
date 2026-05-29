@@ -1,0 +1,33 @@
+{
+  "name": "Eagle Box Cricket",
+  "tagline": "Vijayawada's Premier Box Cricket & Sports Venue",
+  "location": "Plot No. 45, Near Bus Stand, Vijayawada, Andhra Pradesh - 520001",
+  "google_maps": "https://maps.google.com/?q=Eagle+Box+Cricket+Vijayawada",
+  "timings": "6:00 AM – 11:00 PM (All Days)",
+  "contact": "+91 98765 43210",
+  "email": "info@eagleboxcricket.com",
+  "pricing": {
+    "weekday_per_hour": 1200,
+    "weekend_per_hour": 1800,
+    "tournament_package": 5000,
+    "morning_discount_percent": 20,
+    "morning_hours": "6 AM – 10 AM"
+  },
+  "sports": ["Box Cricket", "Football", "Badminton"],
+  "facilities": {
+    "parking": true,
+    "washrooms": true,
+    "food_stall": true,
+    "drinking_water": true,
+    "changing_rooms": true,
+    "floodlights": true,
+    "equipment_rental": true
+  },
+  "equipment": {
+    "cricket": ["Bats", "Balls", "Stumps", "Pads", "Gloves"],
+    "football": ["Footballs", "Goal Nets"],
+    "badminton": ["Rackets", "Shuttlecocks", "Net"]
+  },
+  "turf_size": "30ft x 60ft (Box Cricket), Full size turf (Football)",
+  "capacity": "Max 12 players per session"
+}

@@ -1,0 +1,25 @@
+{
+  "rules": [
+    "Sports shoes are mandatory. No slippers, heels, or spikes allowed on the turf.",
+    "No smoking, alcohol, or tobacco products inside the venue premises.",
+    "Outside food and beverages are not permitted inside the playing area.",
+    "Advance booking is required for all sessions.",
+    "Full payment or minimum 50% advance is required to confirm a slot.",
+    "Players must arrive 10 minutes before the slot time. Late arrivals will not get extra time.",
+    "Maximum 12 players allowed per session unless booked as a tournament package.",
+    "Respect the turf — avoid dragging feet, and do not use metal-spiked shoes.",
+    "Any damage to equipment or facilities will be charged to the booking party.",
+    "The venue reserves the right to cancel a booking in case of emergency (full refund given).",
+    "Children under 10 must be accompanied by an adult at all times.",
+    "No foul language or unsportsmanlike behavior will be tolerated.",
+    "Floodlights are included in all bookings after 6 PM.",
+    "Changing rooms must be kept clean and tidy after use.",
+    "In case of bad weather, management will reschedule or refund the booking."
+  ],
+  "cancellation_policy": {
+    "24_hours_before": "100% refund",
+    "12_to_24_hours_before": "75% refund",
+    "less_than_12_hours": "50% refund",
+    "no_show": "No refund"
+  }
+}

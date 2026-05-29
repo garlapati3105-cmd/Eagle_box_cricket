@@ -1,0 +1,44 @@
+{
+  "upcoming_tournaments": [
+    {
+      "id": "T001",
+      "name": "Eagle Box Cricket Premier League 2026",
+      "sport": "Box Cricket",
+      "date": "2026-06-15",
+      "registration_deadline": "2026-06-10",
+      "entry_fee": 2000,
+      "prize_pool": 15000,
+      "first_prize": 10000,
+      "second_prize": 3000,
+      "third_prize": 2000,
+      "team_size": "6 players + 2 substitutes",
+      "format": "T10 Box Cricket",
+      "max_teams": 12,
+      "registered_teams": 7,
+      "contact": "+91 98765 43210",
+      "rules": [
+        "Each team must have 6 players minimum",
+        "Entry fee must be paid at registration",
+        "Sports shoes mandatory",
+        "ID proof required for all players"
+      ]
+    },
+    {
+      "id": "T002",
+      "name": "Eagle Football 5-a-Side Cup",
+      "sport": "Football",
+      "date": "2026-07-04",
+      "registration_deadline": "2026-06-28",
+      "entry_fee": 1500,
+      "prize_pool": 10000,
+      "first_prize": 7000,
+      "second_prize": 2000,
+      "third_prize": 1000,
+      "team_size": "5 players + 1 substitute",
+      "format": "5-a-Side Knockout",
+      "max_teams": 16,
+      "registered_teams": 4,
+      "contact": "+91 98765 43210"
+    }
+  ]
+}

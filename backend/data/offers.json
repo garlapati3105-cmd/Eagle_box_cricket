@@ -1,0 +1,38 @@
+{
+  "active_offers": [
+    {
+      "id": "MORNING20",
+      "title": "Morning Slot Discount",
+      "description": "20% off on all slots between 6 AM – 10 AM on weekdays",
+      "discount_percent": 20,
+      "valid_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "valid_hours": "6 AM – 10 AM",
+      "code": "MORNING20"
+    },
+    {
+      "id": "WEEKEND_GROUP",
+      "title": "Weekend Group Offer",
+      "description": "Book 2 consecutive hours on weekends and get ₹300 off",
+      "discount_amount": 300,
+      "valid_days": ["Saturday", "Sunday"],
+      "minimum_hours": 2,
+      "code": "WEEKEND2H"
+    },
+    {
+      "id": "FIRST_BOOK",
+      "title": "First Booking Offer",
+      "description": "First-time customers get ₹200 off their first booking",
+      "discount_amount": 200,
+      "for": "first-time customers",
+      "code": "FIRSTBOOK"
+    },
+    {
+      "id": "TOURNAMENT_BUNDLE",
+      "title": "Tournament Bundle",
+      "description": "Full-day tournament package at ₹5000 (includes 8 hours + equipment + refreshments)",
+      "price": 5000,
+      "includes": ["8 hours", "Equipment", "Refreshments", "Referee"],
+      "code": "TOURNAMENT"
+    }
+  ]
+}
